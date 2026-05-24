@@ -163,16 +163,12 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
         </div>
       </header>
 
-      {/* 中央格鬥場景：max-height 限制 45vh，確保下方題目區可見 */}
-      <div className="relative w-full overflow-hidden border-b-[3px] border-black bg-[#1e1450] flex justify-center">
-        <div
-          className="relative"
-          style={{
-            width: "min(100vw, 80vh)",
-            aspectRatio: "1024 / 576",
-          }}
-        >
-          <Image src="/sprites/background.png" alt="" fill priority className="object-cover" />
+      {/* 中央格鬥場景：全寬橫幅 banner */}
+      <div
+        className="relative w-full overflow-hidden border-b-[3px] border-black bg-[#1e1450]"
+        style={{ height: "min(38vh, 320px)", minHeight: "170px" }}
+      >
+        <Image src="/sprites/background.png" alt="" fill priority className="object-cover object-bottom" />
         {/* 你 */}
         <div
           key={`you-${youCheerKey}`}
@@ -214,7 +210,6 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
             priority
             className="object-contain object-bottom drop-shadow-[3px_4px_0_rgba(0,0,0,0.45)]"
           />
-        </div>
         </div>
       </div>
 

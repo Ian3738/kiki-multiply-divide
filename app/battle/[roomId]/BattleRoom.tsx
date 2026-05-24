@@ -176,19 +176,21 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         </div>
       </header>
 
-      {/* 中央格鬥場景：max-height 限制 45vh，確保下方題目區可見 */}
-      <div className="relative w-full overflow-hidden border-b-[3px] border-black bg-[#1e1450] flex justify-center">
-        <div
-          className="relative"
-          style={{
-            width: "min(100vw, 80vh)",
-            aspectRatio: "1024 / 576",
-          }}
-        >
-          <Image src="/sprites/background.png" alt="" fill priority className="object-cover object-center" />
+      {/* 中央格鬥場景：全寬橫幅 banner，固定 max-height */}
+      <div
+        className="relative w-full overflow-hidden border-b-[3px] border-black bg-[#1e1450]"
+        style={{ height: "min(40vh, 360px)", minHeight: "180px" }}
+      >
+        <Image
+          src="/sprites/background.png"
+          alt=""
+          fill
+          priority
+          className="object-cover object-bottom"
+        />
         {/* 你 (P1 紅機甲) */}
         <div
-          className={`absolute bottom-1 left-[6%] h-[92%] aspect-[893/1600] z-10 ${
+          className={`absolute bottom-0 left-[8%] h-[90%] aspect-[893/1600] z-10 ${
             hurtSide === "you" ? "animate-[shake_0.5s]" : ""
           }`}
           style={{
@@ -207,7 +209,7 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         </div>
         {/* 對手 (P2 綠武術家，鏡像) */}
         <div
-          className={`absolute bottom-1 right-[6%] h-[92%] aspect-[893/1600] z-10 ${
+          className={`absolute bottom-0 right-[8%] h-[90%] aspect-[893/1600] z-10 ${
             hurtSide === "opp" ? "animate-[shake-mirror_0.5s]" : ""
           }`}
           style={{
@@ -226,25 +228,92 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
             className="object-contain object-bottom drop-shadow-[3px_4px_0_rgba(0,0,0,0.45)]"
           />
         </div>
+
+        {/* === 攻擊特效層 === */}
+        {hitText && (
+          <>
+            {/* 衝擊波光圈 */}
+            <div
+              className="absolute z-15 pointer-events-none animate-[shockwave_0.6s_ease-out]"
+              style={{
+                top: "50%",
+                left: hitText.side === "you" ? "22%" : "auto",
+                right: hitText.side === "opp" ? "22%" : "auto",
+                transform: "translateY(-50%)",
+                width: "120px",
+                height: "120px",
+              }}
+            >
+              <div className="absolute inset-0 border-[6px] border-yellow-300 rounded-full" />
+            </div>
+            {/* 星爆放射線 */}
+            <div
+              className="absolute z-15 pointer-events-none animate-[burst_0.5s_ease-out]"
+              style={{
+                top: "45%",
+                left: hitText.side === "you" ? "20%" : "auto",
+                right: hitText.side === "opp" ? "20%" : "auto",
+                width: "160px",
+                height: "160px",
+              }}
+            >
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                {[...Array(12)].map((_, i) => {
+                  const a = (i * Math.PI * 2) / 12;
+                  const x1 = 50 + Math.cos(a) * 18;
+                  const y1 = 50 + Math.sin(a) * 18;
+                  const x2 = 50 + Math.cos(a) * 48;
+                  const y2 = 50 + Math.sin(a) * 48;
+                  return (
+                    <line
+                      key={i}
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      stroke="#ffd60a"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                      style={{ filter: "drop-shadow(0 0 4px #ff8800)" }}
+                    />
+                  );
+                })}
+              </svg>
+            </div>
+            {/* POW! / OUCH! 大字 */}
+            <div
+              className="absolute top-[20%] z-20 font-black italic pointer-events-none animate-[hit-pop_0.6s_ease]"
+              style={{
+                left: hitText.side === "you" ? "16%" : undefined,
+                right: hitText.side === "opp" ? "16%" : undefined,
+                fontSize: "clamp(40px, 7vw, 88px)",
+                color: hitText.text === "POW!" ? "#ffd60a" : "#ff5252",
+                WebkitTextStroke: "4px #000",
+                textShadow: "6px 6px 0 #c1272d, -3px -3px 0 #fff",
+                letterSpacing: "-3px",
+                transform: "rotate(-8deg)",
+              }}
+            >
+              {hitText.text}
+            </div>
+          </>
+        )}
+        {/* 全場閃光 (答對/答錯都有) */}
         {hitText && (
           <div
-            className="absolute top-[28%] z-20 font-black italic text-yellow-300 text-3xl sm:text-5xl pointer-events-none animate-[hit-pop_0.6s_ease]"
+            className="absolute inset-0 z-5 pointer-events-none animate-[flash_0.25s_ease-out]"
             style={{
-              left: hitText.side === "you" ? "18%" : undefined,
-              right: hitText.side === "opp" ? "18%" : undefined,
-              WebkitTextStroke: "3px #000",
-              textShadow: "4px 4px 0 #c1272d, -2px -2px 0 #fff",
-              letterSpacing: "-2px",
+              background: hitText.text === "POW!"
+                ? "radial-gradient(circle, rgba(255,214,10,0.6), transparent 60%)"
+                : "radial-gradient(circle, rgba(255,82,82,0.5), transparent 60%)",
             }}
-          >
-            {hitText.text}
-          </div>
+          />
         )}
+
         {oppDown && <Bubble side="opp">{KO_LINES[0]}</Bubble>}
         {youDown && <Bubble side="you">{KO_LINES[0]}</Bubble>}
         {oppDown && <Bubble side="you" win>{WIN_LINES[0]}</Bubble>}
         {youDown && <Bubble side="opp" win>{WIN_LINES[0]}</Bubble>}
-        </div>
       </div>
 
       {/* 下方答題 / 等待 / 結算 */}
@@ -345,8 +414,20 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         }
         @keyframes hit-pop {
           0% { transform: scale(0) rotate(-20deg); opacity: 0; }
-          40% { transform: scale(1.3) rotate(8deg); opacity: 1; }
-          100% { transform: scale(1) rotate(-5deg); opacity: 1; }
+          40% { transform: scale(1.4) rotate(-12deg); opacity: 1; }
+          100% { transform: scale(1) rotate(-8deg); opacity: 1; }
+        }
+        @keyframes shockwave {
+          0% { transform: translateY(-50%) scale(0.2); opacity: 1; }
+          100% { transform: translateY(-50%) scale(2.5); opacity: 0; }
+        }
+        @keyframes burst {
+          0% { transform: scale(0.3) rotate(0deg); opacity: 1; }
+          100% { transform: scale(1.6) rotate(40deg); opacity: 0; }
+        }
+        @keyframes flash {
+          0% { opacity: 1; }
+          100% { opacity: 0; }
         }
       `}</style>
     </main>
