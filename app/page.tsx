@@ -48,7 +48,7 @@ export default function Home() {
         <footer className="mt-10 pt-6 border-t border-slate-200/60 text-xs text-slate-500 leading-relaxed">
           <div className="font-medium text-slate-600 mb-1">資料來源與致謝</div>
           <ul className="space-y-0.5">
-            <li>· 題庫：康軒版國小數學「乘除關係」單元 155 題</li>
+            <li>· 題庫來源：康軒版國小三年級下學期數學「乘除關係」單元</li>
             <li>· 對戰玩法靈感：原版 DD2P_Share8C_2017</li>
             <li>· 特別感謝：桃園市東興國中 鍾元杰 老師</li>
           </ul>
