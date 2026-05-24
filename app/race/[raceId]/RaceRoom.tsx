@@ -135,6 +135,9 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
 
   const youWin = view.phase === "done" && view.winner === view.you;
   const oppWin = view.phase === "done" && view.winner !== null && view.winner !== "draw" && view.winner !== view.you;
+  // A 玩家永遠是紅機甲，B 玩家永遠是綠武術家
+  const yourSprite = view.you === "A" ? "/sprites/fighter-p1.png" : "/sprites/fighter-p2.png";
+  const oppSprite = view.you === "A" ? "/sprites/fighter-p2.png" : "/sprites/fighter-p1.png";
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-amber-50 to-yellow-50 flex flex-col">
@@ -182,7 +185,7 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
           }}
         >
           <Image
-            src="/sprites/fighter-p1.png"
+            src={yourSprite}
             alt="你"
             fill
             priority
@@ -204,7 +207,7 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
           }}
         >
           <Image
-            src="/sprites/fighter-p2.png"
+            src={oppSprite}
             alt="對手"
             fill
             priority

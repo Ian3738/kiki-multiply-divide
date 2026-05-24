@@ -192,6 +192,11 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
 
   const youDown = view.phase === "done" && view.winner !== null && view.winner !== "draw" && view.winner !== view.you;
   const oppDown = view.phase === "done" && view.winner !== null && view.winner !== "draw" && view.winner === view.you;
+  // A 玩家永遠是紅機甲；B 玩家永遠是綠武術家。對手用另一個角色。
+  const yourSprite = view.you === "A" ? "/sprites/fighter-p1.png" : "/sprites/fighter-p2.png";
+  const oppSprite = view.you === "A" ? "/sprites/fighter-p2.png" : "/sprites/fighter-p1.png";
+  const yourLabel = view.you === "A" ? "紅機甲" : "綠武者";
+  const oppLabel = view.you === "A" ? "綠武者" : "紅機甲";
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 flex flex-col">
@@ -207,7 +212,7 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
           賽程表
         </div>
         <div className="flex-1 flex items-center gap-2 justify-end">
-          <span className="text-yellow-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">你 ({view.you})</span>
+          <span className="text-yellow-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">你 {yourLabel}</span>
           <div className="text-xs text-white/70 [text-shadow:_1px_1px_0_#000]">✓{view.yourState.correct}</div>
           <div className="w-32 sm:w-48 h-4 bg-[#4b0d12] border-2 border-black rounded-sm overflow-hidden shadow-inner">
             <div
@@ -233,7 +238,7 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
           </div>
           <div className="text-xs text-white/70 [text-shadow:_1px_1px_0_#000]">✓{view.opponentState.correct}</div>
           <span className="text-emerald-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">
-            對手{view.opponentState.joined ? "" : "（等）"}
+            {oppLabel}{view.opponentState.joined ? "" : "（等）"}
           </span>
         </div>
       </header>
@@ -267,14 +272,14 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
           }}
         >
           <Image
-            src="/sprites/fighter-p1.png"
-            alt="你"
+            src={yourSprite}
+            alt={`你 - ${yourLabel}`}
             fill
             priority
             className="object-contain object-bottom drop-shadow-[3px_4px_0_rgba(0,0,0,0.45)]"
           />
         </div>
-        {/* 對手 (P2 綠武術家，鏡像) */}
+        {/* 對手 (右側，鏡像) */}
         <div
           key={`opp-${oppAction?.key ?? "idle"}-${hurtSide === "opp" ? "hurt" : ""}`}
           className={`absolute bottom-0 right-[8%] h-[90%] aspect-[893/1600] z-10 ${
@@ -291,8 +296,8 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
           }}
         >
           <Image
-            src="/sprites/fighter-p2.png"
-            alt="對手"
+            src={oppSprite}
+            alt={`對手 - ${oppLabel}`}
             fill
             priority
             className="object-contain object-bottom drop-shadow-[3px_4px_0_rgba(0,0,0,0.45)]"
@@ -320,12 +325,19 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
             <div
               className="w-full h-full rounded-full"
               style={{
-                background: wave.from === "you"
-                  ? "radial-gradient(circle, #fffacd 0%, #ffd60a 30%, #ff5722 60%, #b71c1c 100%)"
-                  : "radial-gradient(circle, #e0ffe0 0%, #66ff66 30%, #00c853 60%, #1b5e20 100%)",
-                boxShadow: wave.from === "you"
-                  ? "0 0 30px 10px rgba(255,140,0,0.7), 0 0 60px 20px rgba(255,87,34,0.4)"
-                  : "0 0 30px 10px rgba(0,200,83,0.7), 0 0 60px 20px rgba(102,255,102,0.4)",
+                // 波動拳顏色 = 發射者的角色屬性（紅機甲 → 橘紅火球；綠武術家 → 綠能量球）
+                background: (() => {
+                  const senderIsMech = (wave.from === "you" && view.you === "A") || (wave.from === "opp" && view.you === "B");
+                  return senderIsMech
+                    ? "radial-gradient(circle, #fffacd 0%, #ffd60a 30%, #ff5722 60%, #b71c1c 100%)"
+                    : "radial-gradient(circle, #e0ffe0 0%, #66ff66 30%, #00c853 60%, #1b5e20 100%)";
+                })(),
+                boxShadow: (() => {
+                  const senderIsMech = (wave.from === "you" && view.you === "A") || (wave.from === "opp" && view.you === "B");
+                  return senderIsMech
+                    ? "0 0 30px 10px rgba(255,140,0,0.7), 0 0 60px 20px rgba(255,87,34,0.4)"
+                    : "0 0 30px 10px rgba(0,200,83,0.7), 0 0 60px 20px rgba(102,255,102,0.4)";
+                })(),
               }}
             />
           </div>
