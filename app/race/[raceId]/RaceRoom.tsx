@@ -322,19 +322,19 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
       )}
 
       {view.phase === "done" && (
-        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-          <div className="text-7xl mb-2">
+        <div className="fixed inset-0 z-40 bg-gradient-to-br from-amber-50 to-yellow-50 flex flex-col items-center justify-center px-6 py-8 text-center overflow-y-auto">
+          <div className="text-6xl mb-1">
             {view.winner === "draw" ? "🤝" : view.winner === view.you ? "🏆" : "💀"}
           </div>
-          <div className="text-4xl font-black text-slate-900 [text-shadow:_3px_3px_0_#ffd60a]">
+          <div className="text-3xl sm:text-4xl font-black text-slate-900 [text-shadow:_3px_3px_0_#ffd60a]">
             {view.winner === "draw" ? "DRAW" : view.winner === view.you ? "YOU WIN!" : "DEFEAT"}
           </div>
-          <div className="mt-6 text-2xl font-bold">
+          <div className="mt-4 text-xl sm:text-2xl font-bold">
             <span className="text-amber-700">你 {view.yourScore}</span>
             <span className="mx-3">vs</span>
             <span className="text-emerald-700">對手 {view.opponentScore}</span>
           </div>
-          <div className="mt-8 flex flex-col gap-3">
+          <div className="mt-6 flex flex-col gap-2 w-full max-w-xs">
             <button
               onClick={async () => {
                 try {
@@ -351,12 +351,12 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
                   setError(e instanceof Error ? e.message : String(e));
                 }
               }}
-              className="rounded-lg bg-amber-600 hover:bg-amber-700 px-8 py-3 text-white font-bold"
+              className="rounded-lg bg-amber-600 hover:bg-amber-700 px-6 py-2.5 text-white font-bold"
             >
               再戰一場
             </button>
-            <Link href="/race" className="rounded-lg bg-slate-300 hover:bg-slate-400 px-8 py-3 text-slate-800 font-bold">離開房間</Link>
-            <Link href="/" className="rounded-lg bg-slate-200 hover:bg-slate-300 px-8 py-3 text-slate-700 font-bold">回首頁</Link>
+            <Link href="/race" className="rounded-lg bg-slate-300 hover:bg-slate-400 px-6 py-2.5 text-slate-800 font-bold">離開房間</Link>
+            <Link href="/" className="rounded-lg bg-slate-200 hover:bg-slate-300 px-6 py-2.5 text-slate-700 font-bold">回首頁</Link>
           </div>
         </div>
       )}
