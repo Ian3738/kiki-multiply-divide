@@ -1,65 +1,101 @@
-import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+      <div className="max-w-3xl w-full text-center">
+        <div className="inline-block px-4 py-1 rounded-full bg-amber-200 text-amber-900 text-xs font-bold tracking-widest mb-3">
+          KIKI
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <h1 className="text-5xl font-bold tracking-tight text-slate-900">
+          乘除小達人
+        </h1>
+        <p className="mt-4 text-lg text-slate-600">
+          國小數學 · 康軒版乘除關係 · 155 題
+          <br />
+          一個人練習，或拉朋友一起 PK。
+        </p>
+
+        <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <ModeCard
+            href="/solo"
+            emoji="🧘"
+            title="單人練習"
+            desc="自己挑戰 155 題，可選題數與隨機 / 依序。"
+            color="emerald"
+            cta="開始練習"
+          />
+          <ModeCard
+            href="/battle"
+            emoji="⚔️"
+            title="雙人對戰"
+            desc="建房間互拉朋友。各自答各自題目流，比速度扣對方 HP。"
+            color="rose"
+            cta="建房間"
+          />
+          <ModeCard
+            href="/race"
+            emoji="⚡"
+            title="速度賽"
+            desc="兩人同題搶答 10 題，誰先答對誰得分，勝場多者勝。"
+            color="amber"
+            cta="建房間"
+          />
         </div>
-      </main>
-    </div>
+
+        <p className="mt-10 text-xs text-slate-400">
+          建議使用桌面瀏覽器或 iPad。對戰需要兩人各自開瀏覽器、用 4 字房間代碼配對。
+        </p>
+      </div>
+    </main>
+  );
+}
+
+function ModeCard({
+  href,
+  emoji,
+  title,
+  desc,
+  color,
+  cta,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  desc: string;
+  color: "emerald" | "rose" | "amber";
+  cta: string;
+}) {
+  const colors = {
+    emerald: {
+      bg: "bg-emerald-50",
+      border: "border-emerald-200 hover:border-emerald-500",
+      btn: "bg-emerald-600",
+    },
+    rose: {
+      bg: "bg-rose-50",
+      border: "border-rose-200 hover:border-rose-500",
+      btn: "bg-rose-600",
+    },
+    amber: {
+      bg: "bg-amber-50",
+      border: "border-amber-200 hover:border-amber-500",
+      btn: "bg-amber-600",
+    },
+  }[color];
+  return (
+    <Link
+      href={href}
+      className={`group rounded-xl border-2 ${colors.bg} ${colors.border} p-6 text-left transition flex flex-col`}
+    >
+      <div className="text-4xl mb-3">{emoji}</div>
+      <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+      <p className="mt-2 text-sm text-slate-600 flex-1">{desc}</p>
+      <span
+        className={`mt-4 self-start rounded-full ${colors.btn} px-4 py-1.5 text-white text-sm font-medium`}
+      >
+        {cta} →
+      </span>
+    </Link>
   );
 }
