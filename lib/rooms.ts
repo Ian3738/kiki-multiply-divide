@@ -172,6 +172,35 @@ export async function joinRoom(
   return null;
 }
 
+// 重置房間 — 雙方 HP/correct/wrong/idx 全部歸零、重新洗題目流、phase 回到 playing
+export async function restartRoom(
+  roomId: string,
+  playerId: string,
+): Promise<Room | null> {
+  const room = await getRoom(roomId);
+  if (!room) return null;
+  if (!slotOf(room, playerId)) return null;
+  if (room.A) {
+    room.A.hp = MAX_HP;
+    room.A.correct = 0;
+    room.A.wrong = 0;
+    room.A.idx = 0;
+    room.A.stream = makeStream();
+  }
+  if (room.B) {
+    room.B.hp = MAX_HP;
+    room.B.correct = 0;
+    room.B.wrong = 0;
+    room.B.idx = 0;
+    room.B.stream = makeStream();
+  }
+  room.phase = room.A && room.B ? "playing" : "waiting";
+  room.winner = null;
+  room.updatedAt = Date.now();
+  await store.save(room);
+  return room;
+}
+
 export type AnswerResult =
   | { ok: true; room: Room; right: boolean }
   | { ok: false; error: string };

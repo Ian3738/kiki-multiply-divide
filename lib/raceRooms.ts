@@ -239,6 +239,36 @@ export async function advanceRound(raceId: string): Promise<Race | null> {
   return r;
 }
 
+// 重置速度賽：分數歸零、重新洗題目、phase 回 playing
+export async function restartRace(
+  raceId: string,
+  playerId: string,
+): Promise<Race | null> {
+  const r = await getRace(raceId);
+  if (!r) return null;
+  if (!slotOf(r, playerId)) return null;
+  const stream = QUESTIONS.map((_, i) => i);
+  shuffleInPlace(stream);
+  r.stream = stream.slice(0, Math.max(r.totalRounds, 10));
+  r.current = 0;
+  r.roundLocked = false;
+  r.winner = null;
+  if (r.A) {
+    r.A.score = 0;
+    r.A.currentPick = null;
+    r.A.currentRight = null;
+  }
+  if (r.B) {
+    r.B.score = 0;
+    r.B.currentPick = null;
+    r.B.currentRight = null;
+  }
+  r.phase = r.A && r.B ? "playing" : "waiting";
+  r.updatedAt = Date.now();
+  await store.save(r);
+  return r;
+}
+
 export type RaceView = {
   id: string;
   phase: Phase;

@@ -3,6 +3,7 @@ import {
   getRace,
   joinRace,
   makeRaceView,
+  restartRace,
   slotOf,
   submitRaceAnswer,
 } from "@/lib/raceRooms";
@@ -40,6 +41,14 @@ export async function POST(req: Request, { params }: Params) {
   if (action === "advance") {
     const r = await advanceRound(raceId);
     if (!r) return Response.json({ error: "房間不存在" }, { status: 404 });
+    const slot = slotOf(r, playerId);
+    if (!slot) return Response.json({ error: "不在房間裡" }, { status: 403 });
+    return Response.json({ view: makeRaceView(r, slot) });
+  }
+
+  if (action === "rematch") {
+    const r = await restartRace(raceId, playerId);
+    if (!r) return Response.json({ error: "重啟失敗" }, { status: 400 });
     const slot = slotOf(r, playerId);
     if (!slot) return Response.json({ error: "不在房間裡" }, { status: 403 });
     return Response.json({ view: makeRaceView(r, slot) });

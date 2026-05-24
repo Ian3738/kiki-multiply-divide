@@ -290,7 +290,27 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
             <span className="text-emerald-700">對手 {view.opponentScore}</span>
           </div>
           <div className="mt-8 flex flex-col gap-3">
-            <Link href="/race" className="rounded-lg bg-amber-600 hover:bg-amber-700 px-8 py-3 text-white font-bold">再戰一場</Link>
+            <button
+              onClick={async () => {
+                try {
+                  await fetch(`/api/races/${raceId}`, {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ playerId: studentId, action: "rematch" }),
+                  });
+                  lastYouScore.current = 0;
+                  lastOppScore.current = 0;
+                  advancing.current = false;
+                  await fetchView();
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : String(e));
+                }
+              }}
+              className="rounded-lg bg-amber-600 hover:bg-amber-700 px-8 py-3 text-white font-bold"
+            >
+              再戰一場
+            </button>
+            <Link href="/race" className="rounded-lg bg-slate-300 hover:bg-slate-400 px-8 py-3 text-slate-800 font-bold">離開房間</Link>
             <Link href="/" className="rounded-lg bg-slate-200 hover:bg-slate-300 px-8 py-3 text-slate-700 font-bold">回首頁</Link>
           </div>
         </div>

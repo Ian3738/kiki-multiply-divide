@@ -530,7 +530,32 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
             <ResultCol label="對手" hp={view.opponentState.hp} correct={view.opponentState.correct} wrong={view.opponentState.wrong} />
           </div>
           <div className="mt-8 flex flex-col gap-3">
-            <Link href="/battle" className="rounded-lg bg-rose-600 hover:bg-rose-700 px-8 py-3 text-white font-bold">再戰一場</Link>
+            <button
+              onClick={async () => {
+                try {
+                  await fetch(`/api/rooms/${roomId}`, {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ playerId: studentId, action: "rematch" }),
+                  });
+                  // 重置本地 UI state，等 polling 帶回新 view
+                  streak.current = 0;
+                  oppStreak.current = 0;
+                  lastIdx.current = -1;
+                  lastOppHp.current = 100;
+                  lastOppCorrect.current = 0;
+                  setPicked(null);
+                  setFeedback(null);
+                  await fetchView();
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : String(e));
+                }
+              }}
+              className="rounded-lg bg-rose-600 hover:bg-rose-700 px-8 py-3 text-white font-bold"
+            >
+              再戰一場
+            </button>
+            <Link href="/battle" className="rounded-lg bg-slate-300 hover:bg-slate-400 px-8 py-3 text-slate-800 font-bold">離開房間</Link>
             <Link href="/" className="rounded-lg bg-slate-200 hover:bg-slate-300 px-8 py-3 text-slate-700 font-bold">回首頁</Link>
           </div>
         </div>
