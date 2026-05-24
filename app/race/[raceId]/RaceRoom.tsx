@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import IdentityGate from "@/components/IdentityGate";
@@ -33,7 +34,11 @@ export default function RaceWrapper({ raceId }: { raceId: string }) {
 function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
   const [view, setView] = useState<View | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [oppCheerKey, setOppCheerKey] = useState(0);
+  const [youCheerKey, setYouCheerKey] = useState(0);
   const advancing = useRef(false);
+  const lastOppScore = useRef(0);
+  const lastYouScore = useRef(0);
 
   const fetchView = useCallback(async () => {
     try {
@@ -43,7 +48,17 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
         throw new Error(d.error || `HTTP ${r.status}`);
       }
       const d = await r.json();
-      setView(d.view);
+      const v = d.view as View;
+      // 得分 → 角色彈跳
+      if (v.yourScore > lastYouScore.current) {
+        setYouCheerKey((k) => k + 1);
+        lastYouScore.current = v.yourScore;
+      }
+      if (v.opponentScore > lastOppScore.current) {
+        setOppCheerKey((k) => k + 1);
+        lastOppScore.current = v.opponentScore;
+      }
+      setView(v);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -55,15 +70,11 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
     return () => clearInterval(t);
   }, [fetchView]);
 
-  // 自動推進：如果輪鎖了 + 自己也答過 → 1.5 秒後推進到下一題（任一玩家觸發都行）
   useEffect(() => {
     if (!view) return;
     if (view.phase !== "playing") return;
     if (advancing.current) return;
-    const shouldAdvance =
-      view.roundLocked &&
-      view.yourPick !== null;
-    if (shouldAdvance) {
+    if (view.roundLocked && view.yourPick !== null) {
       advancing.current = true;
       const t = setTimeout(async () => {
         try {
@@ -99,6 +110,10 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
       }
       const d = await r.json();
       setView(d.view);
+      if (d.firstCorrect) {
+        setYouCheerKey((k) => k + 1);
+        lastYouScore.current = d.view.yourScore;
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -118,21 +133,84 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
     return <main className="min-h-screen flex items-center justify-center p-6 bg-amber-50"><div className="text-slate-500">載入中…</div></main>;
   }
 
+  const youWin = view.phase === "done" && view.winner === view.you;
+  const oppWin = view.phase === "done" && view.winner !== null && view.winner !== "draw" && view.winner !== view.you;
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-amber-50 to-yellow-50 flex flex-col">
-      <header className="bg-slate-900 text-white px-4 py-3 flex items-center gap-3 shadow">
-        <Link href="/race" className="text-xs text-slate-400 hover:text-white">← 離開</Link>
-        <div className="text-xs font-bold tracking-widest bg-amber-500 text-slate-900 px-2 py-1 rounded">房 {view.id}</div>
-        <div className="flex-1 text-center text-sm">
+      {/* 頂部 SF2 風 HUD */}
+      <header className="relative bg-gradient-to-b from-blue-700 to-blue-900 border-b-[3px] border-black px-3 py-2 flex items-center gap-2 shadow-[0_4px_0_rgba(0,0,0,0.5)] z-10">
+        <Link
+          href="/race"
+          className="w-7 h-7 flex items-center justify-center bg-amber-500 text-slate-900 font-black text-sm border-2 border-black rounded shadow-[0_2px_0_#000] hover:bg-amber-400"
+        >
+          ✕
+        </Link>
+        <div className="bg-amber-500 text-slate-900 px-3 py-1 font-black text-xs tracking-[0.15em] border-2 border-black rounded">
+          速度賽
+        </div>
+        <div className="flex-1 text-center text-white font-black text-sm [text-shadow:_2px_2px_0_#000]">
           題 {Math.min(view.current + 1, view.totalRounds)} / {view.totalRounds}
         </div>
-        <div className="text-sm">
-          <span className="text-amber-300 font-bold">你 {view.yourScore}</span>
-          <span className="mx-2">vs</span>
-          <span className="text-emerald-300 font-bold">對手 {view.opponentScore}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-yellow-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">你</span>
+          <ScorePill score={view.yourScore} color="amber" />
+          <span className="text-white/70 text-lg">⚔️</span>
+          <ScorePill score={view.opponentScore} color="emerald" />
+          <span className="text-emerald-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">
+            對手{view.opponentJoined ? "" : "（等）"}
+          </span>
         </div>
       </header>
 
+      {/* 中央格鬥場景 */}
+      <div className="relative h-[26vh] min-h-[170px] max-h-[240px] overflow-hidden border-b-[3px] border-black bg-blue-900">
+        <Image src="/sprites/background.png" alt="" fill priority className="object-cover" />
+        {/* 你 */}
+        <div
+          key={`you-${youCheerKey}`}
+          className={`absolute bottom-1 left-[6%] h-[92%] aspect-[893/1600] z-10 ${
+            youCheerKey ? "animate-[victory_0.6s]" : ""
+          }`}
+          style={{
+            transformOrigin: "50% 100%",
+            transform: oppWin ? "rotate(-85deg) translate(-30px,10px)" : undefined,
+            filter: oppWin ? "grayscale(0.3) brightness(0.85)" : undefined,
+          }}
+        >
+          <Image
+            src="/sprites/fighter-p1.png"
+            alt="你"
+            fill
+            priority
+            className="object-contain object-bottom drop-shadow-[3px_4px_0_rgba(0,0,0,0.45)]"
+          />
+        </div>
+        {/* 對手 */}
+        <div
+          key={`opp-${oppCheerKey}`}
+          className={`absolute bottom-1 right-[6%] h-[92%] aspect-[893/1600] z-10 ${
+            oppCheerKey ? "animate-[victory-mirror_0.6s]" : ""
+          }`}
+          style={{
+            transformOrigin: "50% 100%",
+            transform: youWin
+              ? "scaleX(-1) rotate(-85deg) translate(-30px,10px)"
+              : "scaleX(-1)",
+            filter: youWin ? "grayscale(0.3) brightness(0.85)" : undefined,
+          }}
+        >
+          <Image
+            src="/sprites/fighter-p2.png"
+            alt="對手"
+            fill
+            priority
+            className="object-contain object-bottom drop-shadow-[3px_4px_0_rgba(0,0,0,0.45)]"
+          />
+        </div>
+      </div>
+
+      {/* 下方答題 / 等待 / 結算 */}
       {view.phase === "waiting" && (
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
           <div className="text-7xl mb-4">⏳</div>
@@ -145,9 +223,9 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
       )}
 
       {view.phase === "playing" && (
-        <div className="flex-1 flex flex-col items-center justify-start p-4 sm:p-8">
+        <div className="flex-1 flex flex-col items-center justify-start p-4 sm:p-6">
           <div className="w-full max-w-2xl">
-            <div className="rounded-2xl bg-white border-4 border-slate-900 shadow-lg p-6 mb-5">
+            <div className="rounded-2xl bg-white border-4 border-slate-900 shadow-lg p-5 mb-4">
               <div className="text-base sm:text-lg font-bold whitespace-pre-wrap leading-relaxed">
                 {view.question.q}
               </div>
@@ -194,10 +272,10 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
 
       {view.phase === "done" && (
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-          <div className="text-7xl mb-4">
+          <div className="text-7xl mb-2">
             {view.winner === "draw" ? "🤝" : view.winner === view.you ? "🏆" : "💀"}
           </div>
-          <div className="text-4xl font-black text-slate-900">
+          <div className="text-4xl font-black text-slate-900 [text-shadow:_3px_3px_0_#ffd60a]">
             {view.winner === "draw" ? "DRAW" : view.winner === view.you ? "YOU WIN!" : "DEFEAT"}
           </div>
           <div className="mt-6 text-2xl font-bold">
@@ -211,6 +289,26 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        @keyframes victory {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-20px) scale(1.1); }
+        }
+        @keyframes victory-mirror {
+          0%, 100% { transform: scaleX(-1) translateY(0); }
+          50% { transform: scaleX(-1) translateY(-20px); }
+        }
+      `}</style>
     </main>
+  );
+}
+
+function ScorePill({ score, color }: { score: number; color: "amber" | "emerald" }) {
+  const bg = color === "amber" ? "bg-amber-400 text-amber-900" : "bg-emerald-400 text-emerald-900";
+  return (
+    <div className={`${bg} border-2 border-black rounded-md px-2 py-0.5 font-black text-sm shadow-[0_2px_0_#000] min-w-[28px] text-center`}>
+      {score}
+    </div>
   );
 }
