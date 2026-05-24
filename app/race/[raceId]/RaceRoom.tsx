@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import IdentityGate from "@/components/IdentityGate";
-import { useBGM } from "@/lib/useBGM";
 
 type View = {
   id: string;
@@ -71,9 +70,35 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
     return () => clearInterval(t);
   }, [fetchView]);
 
-  // BGM (gapless loop via Web Audio API)
+  // BGM
   const [muted, setMuted] = useState(false);
-  useBGM("/audio/pixel-clash.m4a", view?.phase === "playing", muted, 0.4);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const shouldPlay = view?.phase === "playing" && !muted;
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.volume = 0.45;
+    if (shouldPlay) {
+      void a.play().catch(() => {});
+    } else {
+      a.pause();
+    }
+  }, [shouldPlay]);
+  useEffect(() => {
+    if (!shouldPlay) return;
+    const tryPlay = () => {
+      const a = audioRef.current;
+      if (a && a.paused) void a.play().catch(() => {});
+    };
+    document.addEventListener("click", tryPlay, { passive: true });
+    document.addEventListener("touchstart", tryPlay, { passive: true });
+    document.addEventListener("keydown", tryPlay);
+    return () => {
+      document.removeEventListener("click", tryPlay);
+      document.removeEventListener("touchstart", tryPlay);
+      document.removeEventListener("keydown", tryPlay);
+    };
+  }, [shouldPlay]);
 
   useEffect(() => {
     if (!view) return;
@@ -146,6 +171,13 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
 
   return (
     <main className="min-h-svh bg-gradient-to-br from-amber-50 to-yellow-50 flex flex-col">
+      <audio
+        ref={audioRef}
+        src="/audio/pixel-clash.m4a"
+        loop
+        preload="auto"
+        playsInline
+      />
       {/* 頂部 SF2 風 HUD */}
       <header className="relative bg-gradient-to-b from-blue-700 to-blue-900 border-b-[3px] border-black px-3 py-2 flex items-center gap-2 shadow-[0_4px_0_rgba(0,0,0,0.5)] z-10">
         <Link
