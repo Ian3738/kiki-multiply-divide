@@ -61,15 +61,21 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
       }
       const d = await r.json();
       const v = d.view as View;
-      // 對手有進步：可能他答對打到你（你 HP 下降）
-      if (v.yourState.hp < (view?.yourState.hp ?? 100)) {
-        // 對手對我發動攻擊（從 polling 偵測）
-        oppStreak.current++;
-        triggerOppAttack(oppStreak.current);
-      }
-      // 對手答錯（correct 沒變但 wrong+1）→ 不影響我
-      if (v.opponentState.correct > lastOppCorrect.current) {
-        // 對手答對—可能已 polling 處理過了
+      // 遊戲結束後不再觸發任何攻擊動畫（避免角色「爬起來」）
+      if (v.phase === "playing") {
+        // 對手打到你（你 HP 下降）→ 觸發對手攻擊動畫
+        if (v.yourState.hp < (view?.yourState.hp ?? 100)) {
+          oppStreak.current++;
+          triggerOppAttack(oppStreak.current);
+        }
+      } else if (v.phase === "done") {
+        // KO 後清掉所有殘留的動畫 state，讓角色停在倒下狀態
+        setYouAction(null);
+        setOppAction(null);
+        setWave(null);
+        setSpecialBanner(null);
+        setHitText(null);
+        setHurtSide(null);
       }
       lastOppCorrect.current = v.opponentState.correct;
       lastOppHp.current = v.opponentState.hp;
