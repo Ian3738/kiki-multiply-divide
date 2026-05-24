@@ -140,6 +140,28 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
     return () => clearInterval(t);
   }, [fetchView]);
 
+  // ===== BGM =====
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [muted, setMuted] = useState(false);
+  // 依 phase 控制播放
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.volume = 0.4;
+    a.muted = muted;
+    if (view?.phase === "playing" && !muted) {
+      a.play().catch(() => {/* autoplay blocked → 等使用者點 unmute */});
+    } else {
+      a.pause();
+    }
+  }, [view?.phase, muted]);
+  // 卸載時暫停
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+    };
+  }, []);
+
   async function submit(p: number) {
     if (picked !== null || !view) return;
     if (view.phase !== "playing") return;
@@ -206,6 +228,8 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 flex flex-col">
+      {/* 背景音樂 */}
+      <audio ref={audioRef} src="/audio/pixel-clash.mp3" loop preload="auto" />
       {/* 頂部 SF2 風 HUD */}
       <header className="relative bg-gradient-to-b from-blue-700 to-blue-900 border-b-[3px] border-black px-3 py-2 flex items-center gap-2 shadow-[0_4px_0_rgba(0,0,0,0.5)] z-10">
         <Link
@@ -217,6 +241,14 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         <div className="bg-rose-600 text-white px-3 py-1 font-black text-xs tracking-[0.15em] border-2 border-black rounded">
           賽程表
         </div>
+        <button
+          onClick={() => setMuted((m) => !m)}
+          aria-label={muted ? "開啟音樂" : "靜音"}
+          title={muted ? "開啟音樂" : "靜音"}
+          className="w-7 h-7 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm border-2 border-black rounded shadow-[0_2px_0_#000]"
+        >
+          {muted ? "🔇" : "🔊"}
+        </button>
         <div className="flex-1 flex items-center gap-2 justify-end">
           <span className="text-yellow-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">你 {yourLabel}</span>
           <div className="text-xs text-white/70 [text-shadow:_1px_1px_0_#000]">✓{view.yourState.correct}</div>

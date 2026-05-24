@@ -70,6 +70,22 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
     return () => clearInterval(t);
   }, [fetchView]);
 
+  // BGM
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [muted, setMuted] = useState(false);
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.volume = 0.4;
+    a.muted = muted;
+    if (view?.phase === "playing" && !muted) {
+      a.play().catch(() => {});
+    } else {
+      a.pause();
+    }
+  }, [view?.phase, muted]);
+  useEffect(() => () => { audioRef.current?.pause(); }, []);
+
   useEffect(() => {
     if (!view) return;
     if (view.phase !== "playing") return;
@@ -141,6 +157,7 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-amber-50 to-yellow-50 flex flex-col">
+      <audio ref={audioRef} src="/audio/pixel-clash.mp3" loop preload="auto" />
       {/* 頂部 SF2 風 HUD */}
       <header className="relative bg-gradient-to-b from-blue-700 to-blue-900 border-b-[3px] border-black px-3 py-2 flex items-center gap-2 shadow-[0_4px_0_rgba(0,0,0,0.5)] z-10">
         <Link
@@ -152,6 +169,14 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
         <div className="bg-amber-500 text-slate-900 px-3 py-1 font-black text-xs tracking-[0.15em] border-2 border-black rounded">
           速度賽
         </div>
+        <button
+          onClick={() => setMuted((m) => !m)}
+          aria-label={muted ? "開啟音樂" : "靜音"}
+          title={muted ? "開啟音樂" : "靜音"}
+          className="w-7 h-7 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm border-2 border-black rounded shadow-[0_2px_0_#000]"
+        >
+          {muted ? "🔇" : "🔊"}
+        </button>
         <div className="flex-1 text-center text-white font-black text-sm [text-shadow:_2px_2px_0_#000]">
           題 {Math.min(view.current + 1, view.totalRounds)} / {view.totalRounds}
         </div>
