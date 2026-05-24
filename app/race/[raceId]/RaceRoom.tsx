@@ -163,9 +163,13 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
         </div>
       </header>
 
-      {/* 中央格鬥場景 */}
-      <div className="relative h-[26vh] min-h-[170px] max-h-[240px] overflow-hidden border-b-[3px] border-black bg-blue-900">
-        <Image src="/sprites/background.png" alt="" fill priority className="object-cover" />
+      {/* 中央格鬥場景：用 aspect-ratio 強制完整顯示背景 */}
+      <div className="relative w-full overflow-hidden border-b-[3px] border-black bg-[#1e1450] flex justify-center">
+        <div
+          className="relative w-full max-w-[min(100vw,160vh)]"
+          style={{ aspectRatio: "1024 / 576" }}
+        >
+          <Image src="/sprites/background.png" alt="" fill priority className="object-cover" />
         {/* 你 */}
         <div
           key={`you-${youCheerKey}`}
@@ -207,6 +211,7 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
             priority
             className="object-contain object-bottom drop-shadow-[3px_4px_0_rgba(0,0,0,0.45)]"
           />
+        </div>
         </div>
       </div>
 

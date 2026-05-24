@@ -176,9 +176,13 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         </div>
       </header>
 
-      {/* 中央格鬥場景 */}
-      <div className="relative h-[28vh] min-h-[180px] max-h-[260px] overflow-hidden border-b-[3px] border-black bg-blue-900">
-        <Image src="/sprites/background.png" alt="" fill priority className="object-cover" />
+      {/* 中央格鬥場景：用 aspect-ratio 強制 16:9 顯示完整背景 */}
+      <div className="relative w-full overflow-hidden border-b-[3px] border-black bg-[#1e1450] flex justify-center">
+        <div
+          className="relative w-full max-w-[min(100vw,160vh)]"
+          style={{ aspectRatio: "1024 / 576" }}
+        >
+          <Image src="/sprites/background.png" alt="" fill priority className="object-cover object-center" />
         {/* 你 (P1 紅機甲) */}
         <div
           className={`absolute bottom-1 left-[6%] h-[92%] aspect-[893/1600] z-10 ${
@@ -237,6 +241,7 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         {youDown && <Bubble side="you">{KO_LINES[0]}</Bubble>}
         {oppDown && <Bubble side="you" win>{WIN_LINES[0]}</Bubble>}
         {youDown && <Bubble side="opp" win>{WIN_LINES[0]}</Bubble>}
+        </div>
       </div>
 
       {/* 下方答題 / 等待 / 結算 */}
