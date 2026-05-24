@@ -49,9 +49,8 @@ export default function Home() {
           <div className="font-medium text-slate-600 mb-1">資料來源與致謝</div>
           <ul className="space-y-0.5">
             <li>· 題庫：康軒版國小數學「乘除關係」單元 155 題</li>
-            <li>· 角色與場景：Gemini 3 Pro Image (Nano Banana Pro) 生成 · 像素藝術風格</li>
-            <li>· 背景音樂：Pixel Clash</li>
-            <li>· 介面框架：Next.js · Tailwind CSS · Upstash Redis · Vercel</li>
+            <li>· 對戰玩法靈感：原版 DD2P_Share8C_2017（答答二人組）</li>
+            <li>· 特別感謝：桃園市東興國中 鍾元杰 老師</li>
           </ul>
           <div className="mt-3 text-slate-400">
             © 2026 · 教育用途 · 題目選項由系統自動產生用於遊戲化練習
