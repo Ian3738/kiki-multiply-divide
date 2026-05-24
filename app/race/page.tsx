@@ -3,7 +3,7 @@ import RaceLobby from "./RaceLobby";
 
 export default function RaceIndex() {
   return (
-    <main className="min-h-screen px-6 py-10 bg-gradient-to-br from-amber-50 to-yellow-50">
+    <main className="min-h-svh px-6 py-10 bg-gradient-to-br from-amber-50 to-yellow-50">
       <div className="max-w-xl mx-auto">
         <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">← 回首頁</Link>
         <h1 className="mt-4 text-3xl font-bold">⚡ 速度賽</h1>

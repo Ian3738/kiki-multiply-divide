@@ -3,7 +3,7 @@ import BattleLobby from "./BattleLobby";
 
 export default function BattleIndex() {
   return (
-    <main className="min-h-screen px-6 py-10 bg-gradient-to-br from-rose-50 to-pink-50">
+    <main className="min-h-svh px-6 py-10 bg-gradient-to-br from-rose-50 to-pink-50">
       <div className="max-w-xl mx-auto">
         <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">← 回首頁</Link>
         <h1 className="mt-4 text-3xl font-bold">⚔️ 雙人對戰</h1>

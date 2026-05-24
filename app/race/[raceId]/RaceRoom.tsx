@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import IdentityGate from "@/components/IdentityGate";
+import { useBGM } from "@/lib/useBGM";
 
 type View = {
   id: string;
@@ -70,21 +71,9 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
     return () => clearInterval(t);
   }, [fetchView]);
 
-  // BGM
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // BGM (gapless loop via Web Audio API)
   const [muted, setMuted] = useState(false);
-  useEffect(() => {
-    const a = audioRef.current;
-    if (!a) return;
-    a.volume = 0.4;
-    a.muted = muted;
-    if (view?.phase === "playing" && !muted) {
-      a.play().catch(() => {});
-    } else {
-      a.pause();
-    }
-  }, [view?.phase, muted]);
-  useEffect(() => () => { audioRef.current?.pause(); }, []);
+  useBGM("/audio/pixel-clash.mp3", view?.phase === "playing", muted, 0.4);
 
   useEffect(() => {
     if (!view) return;
@@ -137,7 +126,7 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
 
   if (error) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6 bg-amber-50">
+      <main className="min-h-svh flex items-center justify-center p-6 bg-amber-50">
         <div className="text-center">
           <div className="text-rose-700 font-bold text-lg">{error}</div>
           <Link href="/race" className="mt-4 inline-block text-amber-700 underline">← 回速度賽大廳</Link>
@@ -146,7 +135,7 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
     );
   }
   if (!view) {
-    return <main className="min-h-screen flex items-center justify-center p-6 bg-amber-50"><div className="text-slate-500">載入中…</div></main>;
+    return <main className="min-h-svh flex items-center justify-center p-6 bg-amber-50"><div className="text-slate-500">載入中…</div></main>;
   }
 
   const youWin = view.phase === "done" && view.winner === view.you;
@@ -156,8 +145,7 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
   const oppSprite = view.you === "A" ? "/sprites/fighter-p2.png" : "/sprites/fighter-p1.png";
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-amber-50 to-yellow-50 flex flex-col">
-      <audio ref={audioRef} src="/audio/pixel-clash.mp3" loop preload="auto" />
+    <main className="min-h-svh bg-gradient-to-br from-amber-50 to-yellow-50 flex flex-col">
       {/* 頂部 SF2 風 HUD */}
       <header className="relative bg-gradient-to-b from-blue-700 to-blue-900 border-b-[3px] border-black px-3 py-2 flex items-center gap-2 shadow-[0_4px_0_rgba(0,0,0,0.5)] z-10">
         <Link
@@ -194,7 +182,7 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
       {/* 中央格鬥場景：全寬橫幅 banner */}
       <div
         className="relative w-full overflow-hidden border-b-[3px] border-black bg-[#1e1450]"
-        style={{ height: "min(38vh, 320px)", minHeight: "170px" }}
+        style={{ height: "min(38dvh, 320px)", minHeight: "170px" }}
       >
         <Image src="/sprites/background.png" alt="" fill priority className="object-cover object-bottom" />
         {/* 你 */}

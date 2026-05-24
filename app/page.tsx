@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+    <main className="min-h-svh flex flex-col items-center justify-center px-6 py-12 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
       <div className="max-w-3xl w-full text-center">
         <div className="inline-block px-4 py-1 rounded-full bg-amber-200 text-amber-900 text-xs font-bold tracking-widest mb-3">
           KIKI

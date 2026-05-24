@@ -45,7 +45,7 @@ export default function SoloPage() {
 
   if (phase === "setup") {
     return (
-      <main className="min-h-screen px-6 py-10 bg-gradient-to-br from-emerald-50 to-teal-50">
+      <main className="min-h-svh px-6 py-10 bg-gradient-to-br from-emerald-50 to-teal-50">
         <div className="max-w-xl mx-auto">
           <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">← 回首頁</Link>
           <h1 className="mt-4 text-3xl font-bold">🧘 單人練習</h1>
@@ -103,7 +103,7 @@ export default function SoloPage() {
   if (phase === "result") {
     const rate = Math.round((correct / questions.length) * 100);
     return (
-      <main className="min-h-screen px-6 py-10 bg-gradient-to-br from-emerald-50 to-teal-50">
+      <main className="min-h-svh px-6 py-10 bg-gradient-to-br from-emerald-50 to-teal-50">
         <div className="max-w-xl mx-auto text-center">
           <div className="text-6xl mb-4">
             {rate === 100 ? "🏆" : rate >= 80 ? "🥇" : rate >= 60 ? "🥈" : rate >= 40 ? "🥉" : "💪"}
@@ -133,7 +133,7 @@ export default function SoloPage() {
   // playing
   const q = questions[idx];
   return (
-    <main className="min-h-screen px-4 py-6 bg-gradient-to-br from-emerald-50 to-teal-50">
+    <main className="min-h-svh px-4 py-6 bg-gradient-to-br from-emerald-50 to-teal-50">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between text-sm text-slate-600 mb-3">
           <button onClick={() => setPhase("setup")} className="hover:text-slate-900">← 退出</button>
