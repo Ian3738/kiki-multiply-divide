@@ -52,6 +52,7 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
   const lastIdx = useRef<number>(-1);
   const lastOppHp = useRef<number>(100);
   const lastOppCorrect = useRef<number>(0);
+  const lastOppWrong = useRef<number>(0);
 
   const fetchView = useCallback(async () => {
     try {
@@ -62,15 +63,19 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
       }
       const d = await r.json();
       const v = d.view as View;
-      // 遊戲結束後不再觸發任何攻擊動畫（避免角色「爬起來」）
+      // 遊戲結束後不再觸發任何攻擊動畫
       if (v.phase === "playing") {
-        // 對手打到你（你 HP 下降）→ 觸發對手攻擊動畫
-        if (v.yourState.hp < (view?.yourState.hp ?? 100)) {
+        // 對手答對才會打到你 → 用對手 correct 變化精確判斷（避免「你答錯扣自己 HP」誤觸發）
+        if (v.opponentState.correct > lastOppCorrect.current) {
           oppStreak.current++;
           triggerOppAttack(oppStreak.current);
         }
+        // 對手答錯 → 連對中斷
+        if (v.opponentState.wrong > lastOppWrong.current) {
+          oppStreak.current = 0;
+        }
       } else if (v.phase === "done") {
-        // KO 後清掉所有殘留的動畫 state，讓角色停在倒下狀態
+        // KO 後清掉所有殘留的動畫 state
         setYouAction(null);
         setOppAction(null);
         setWave(null);
@@ -79,6 +84,7 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         setHurtSide(null);
       }
       lastOppCorrect.current = v.opponentState.correct;
+      lastOppWrong.current = v.opponentState.wrong;
       lastOppHp.current = v.opponentState.hp;
       setView(v);
       if (v.yourState.idx !== lastIdx.current) {
