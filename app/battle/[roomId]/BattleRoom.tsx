@@ -38,8 +38,19 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
   const [feedback, setFeedback] = useState<"right" | "wrong" | null>(null);
   const [hitText, setHitText] = useState<{ side: "you" | "opp"; text: string } | null>(null);
   const [hurtSide, setHurtSide] = useState<"you" | "opp" | null>(null);
+  // 角色動作：'punch' 衝刺出拳 | 'shoryuken' 升龍拳 | 'flying-kick' 飛踢 | null
+  const [youAction, setYouAction] = useState<{ type: string; key: number } | null>(null);
+  const [oppAction, setOppAction] = useState<{ type: string; key: number } | null>(null);
+  // 波動拳能量球：from 哪一邊發射、命中動畫 key
+  const [wave, setWave] = useState<{ from: "you" | "opp"; key: number; type: "wave" | "fireball" } | null>(null);
+  // 大招橫幅
+  const [specialBanner, setSpecialBanner] = useState<{ text: string; key: number } | null>(null);
+  // 連對 counter
+  const streak = useRef<number>(0);
+  const oppStreak = useRef<number>(0);
   const lastIdx = useRef<number>(-1);
   const lastOppHp = useRef<number>(100);
+  const lastOppCorrect = useRef<number>(0);
 
   const fetchView = useCallback(async () => {
     try {
@@ -50,13 +61,17 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
       }
       const d = await r.json();
       const v = d.view as View;
-      // 對手 HP 下降 → 顯示對方 hurt + POW
-      if (v.opponentState.hp < lastOppHp.current) {
-        setHurtSide("opp");
-        setHitText({ side: "opp", text: "POW!" });
-        setTimeout(() => setHurtSide(null), 600);
-        setTimeout(() => setHitText(null), 700);
+      // 對手有進步：可能他答對打到你（你 HP 下降）
+      if (v.yourState.hp < (view?.yourState.hp ?? 100)) {
+        // 對手對我發動攻擊（從 polling 偵測）
+        oppStreak.current++;
+        triggerOppAttack(oppStreak.current);
       }
+      // 對手答錯（correct 沒變但 wrong+1）→ 不影響我
+      if (v.opponentState.correct > lastOppCorrect.current) {
+        // 對手答對—可能已 polling 處理過了
+      }
+      lastOppCorrect.current = v.opponentState.correct;
       lastOppHp.current = v.opponentState.hp;
       setView(v);
       if (v.yourState.idx !== lastIdx.current) {
@@ -67,7 +82,51 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, studentId]);
+
+  // 你發動攻擊（連擊越多招式越強）
+  function triggerYourAttack(s: number) {
+    let type = "punch";
+    let waveType: "wave" | "fireball" = "wave";
+    let banner: string | null = null;
+    if (s >= 5) {
+      type = "shoryuken";
+      waveType = "fireball";
+      banner = "SHORYUKEN!";
+    } else if (s >= 3) {
+      type = "flying-kick";
+      waveType = "fireball";
+      banner = "HADOUKEN!";
+    }
+    setYouAction({ type, key: Date.now() });
+    setWave({ from: "you", key: Date.now(), type: waveType });
+    if (banner) setSpecialBanner({ text: banner, key: Date.now() });
+
+    setHitText({ side: "opp", text: type === "shoryuken" ? "K.O!?" : type === "flying-kick" ? "BOOM!" : "POW!" });
+    setHurtSide("opp");
+    setTimeout(() => setHurtSide(null), 600);
+    setTimeout(() => setHitText(null), 800);
+    setTimeout(() => setYouAction(null), 800);
+    setTimeout(() => setWave(null), 800);
+    if (banner) setTimeout(() => setSpecialBanner(null), 1200);
+  }
+  function triggerOppAttack(s: number) {
+    let type = "punch";
+    let waveType: "wave" | "fireball" = "wave";
+    if (s >= 3) {
+      type = "flying-kick";
+      waveType = "fireball";
+    }
+    setOppAction({ type, key: Date.now() });
+    setWave({ from: "opp", key: Date.now(), type: waveType });
+    setHitText({ side: "you", text: "OUCH!" });
+    setHurtSide("you");
+    setTimeout(() => setHurtSide(null), 600);
+    setTimeout(() => setHitText(null), 800);
+    setTimeout(() => setOppAction(null), 800);
+    setTimeout(() => setWave(null), 800);
+  }
 
   useEffect(() => {
     fetchView();
@@ -95,14 +154,17 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
       setFeedback(d.right ? "right" : "wrong");
       lastIdx.current = v.yourState.idx;
       if (d.right) {
-        setHitText({ side: "opp", text: "POW!" });
-        setHurtSide("opp");
+        streak.current++;
+        triggerYourAttack(streak.current);
       } else {
+        streak.current = 0; // 連對中斷
         setHitText({ side: "you", text: "OUCH!" });
         setHurtSide("you");
+        setYouAction({ type: "stagger", key: Date.now() });
+        setTimeout(() => setHurtSide(null), 600);
+        setTimeout(() => setHitText(null), 700);
+        setTimeout(() => setYouAction(null), 500);
       }
-      setTimeout(() => setHurtSide(null), 600);
-      setTimeout(() => setHitText(null), 700);
       lastOppHp.current = v.opponentState.hp;
       setTimeout(() => {
         setPicked(null);
@@ -190,7 +252,12 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         />
         {/* 你 (P1 紅機甲) */}
         <div
+          key={`you-${youAction?.key ?? "idle"}-${hurtSide === "you" ? "hurt" : ""}`}
           className={`absolute bottom-0 left-[8%] h-[90%] aspect-[893/1600] z-10 ${
+            youAction?.type === "punch" ? "animate-[punch-right_0.6s_ease-out]" :
+            youAction?.type === "flying-kick" ? "animate-[flying-kick-right_0.7s_ease-out]" :
+            youAction?.type === "shoryuken" ? "animate-[shoryuken_0.8s_ease-out]" :
+            youAction?.type === "stagger" ? "animate-[stagger_0.5s_ease-out]" :
             hurtSide === "you" ? "animate-[shake_0.5s]" : ""
           }`}
           style={{
@@ -209,7 +276,10 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         </div>
         {/* 對手 (P2 綠武術家，鏡像) */}
         <div
+          key={`opp-${oppAction?.key ?? "idle"}-${hurtSide === "opp" ? "hurt" : ""}`}
           className={`absolute bottom-0 right-[8%] h-[90%] aspect-[893/1600] z-10 ${
+            oppAction?.type === "punch" ? "animate-[punch-left-mirror_0.6s_ease-out]" :
+            oppAction?.type === "flying-kick" ? "animate-[flying-kick-left-mirror_0.7s_ease-out]" :
             hurtSide === "opp" ? "animate-[shake-mirror_0.5s]" : ""
           }`}
           style={{
@@ -228,6 +298,57 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
             className="object-contain object-bottom drop-shadow-[3px_4px_0_rgba(0,0,0,0.45)]"
           />
         </div>
+
+        {/* === 波動拳能量球 === */}
+        {wave && (
+          <div
+            key={`wave-${wave.key}`}
+            className={`absolute pointer-events-none z-15 ${
+              wave.from === "you"
+                ? "animate-[wave-fly-right_0.6s_ease-out]"
+                : "animate-[wave-fly-left_0.6s_ease-out]"
+            }`}
+            style={{
+              top: "55%",
+              left: wave.from === "you" ? "18%" : undefined,
+              right: wave.from === "opp" ? "18%" : undefined,
+              width: wave.type === "fireball" ? "90px" : "60px",
+              height: wave.type === "fireball" ? "90px" : "60px",
+              transform: "translateY(-50%)",
+            }}
+          >
+            <div
+              className="w-full h-full rounded-full"
+              style={{
+                background: wave.from === "you"
+                  ? "radial-gradient(circle, #fffacd 0%, #ffd60a 30%, #ff5722 60%, #b71c1c 100%)"
+                  : "radial-gradient(circle, #e0ffe0 0%, #66ff66 30%, #00c853 60%, #1b5e20 100%)",
+                boxShadow: wave.from === "you"
+                  ? "0 0 30px 10px rgba(255,140,0,0.7), 0 0 60px 20px rgba(255,87,34,0.4)"
+                  : "0 0 30px 10px rgba(0,200,83,0.7), 0 0 60px 20px rgba(102,255,102,0.4)",
+              }}
+            />
+          </div>
+        )}
+
+        {/* === 大招橫幅 (HADOUKEN! / SHORYUKEN!) === */}
+        {specialBanner && (
+          <div
+            key={`banner-${specialBanner.key}`}
+            className="absolute top-[35%] left-1/2 z-30 pointer-events-none font-black italic animate-[banner-burst_1s_ease-out]"
+            style={{
+              fontSize: "clamp(40px, 6vw, 80px)",
+              transform: "translateX(-50%) rotate(-6deg)",
+              color: "#ffd60a",
+              WebkitTextStroke: "5px #000",
+              textShadow: "8px 8px 0 #c1272d, -3px -3px 0 #fff, 0 0 20px #ff8800",
+              letterSpacing: "-3px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {specialBanner.text}
+          </div>
+        )}
 
         {/* === 攻擊特效層 === */}
         {hitText && (
@@ -428,6 +549,66 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         @keyframes flash {
           0% { opacity: 1; }
           100% { opacity: 0; }
+        }
+        /* === 角色攻擊招式 === */
+        @keyframes punch-right {
+          0% { transform: translateX(0); }
+          15% { transform: translateX(-15px) scaleX(0.95); }  /* 蓄力後縮 */
+          40% { transform: translateX(60px) scaleX(1.08); }   /* 衝刺出拳 */
+          60% { transform: translateX(80px); }                /* 命中 */
+          100% { transform: translateX(0); }                  /* 回原位 */
+        }
+        @keyframes punch-left-mirror {
+          0% { transform: scaleX(-1) translateX(0); }
+          15% { transform: scaleX(-1) translateX(-15px); }
+          40% { transform: scaleX(-1) translateX(60px); }
+          60% { transform: scaleX(-1) translateX(80px); }
+          100% { transform: scaleX(-1) translateX(0); }
+        }
+        @keyframes flying-kick-right {
+          0% { transform: translate(0, 0) rotate(0); }
+          25% { transform: translate(-10px, -40px) rotate(-10deg); } /* 跳起 */
+          55% { transform: translate(120px, -25px) rotate(15deg); }  /* 飛踢 */
+          75% { transform: translate(140px, 0) rotate(0deg); }       /* 落地 */
+          100% { transform: translate(0, 0) rotate(0); }
+        }
+        @keyframes flying-kick-left-mirror {
+          0% { transform: scaleX(-1) translate(0, 0) rotate(0); }
+          25% { transform: scaleX(-1) translate(-10px, -40px) rotate(-10deg); }
+          55% { transform: scaleX(-1) translate(120px, -25px) rotate(15deg); }
+          75% { transform: scaleX(-1) translate(140px, 0) rotate(0deg); }
+          100% { transform: scaleX(-1) translate(0, 0) rotate(0); }
+        }
+        @keyframes shoryuken {
+          0% { transform: translate(0, 0) rotate(0); }
+          20% { transform: translate(0, 5px) scaleY(0.9); }      /* 蹲下蓄力 */
+          50% { transform: translate(40px, -100px) rotate(-25deg); } /* 跳起 + 旋轉 */
+          70% { transform: translate(60px, -70px) rotate(20deg); }
+          100% { transform: translate(0, 0) rotate(0); }
+        }
+        @keyframes stagger {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-12px) scaleX(0.92); }
+          50% { transform: translateX(-8px) scaleX(0.95); }
+          75% { transform: translateX(-4px); }
+        }
+        /* 波動拳飛行 */
+        @keyframes wave-fly-right {
+          0% { opacity: 0; transform: translateY(-50%) translateX(0) scale(0.3); }
+          15% { opacity: 1; transform: translateY(-50%) translateX(30px) scale(0.8); }
+          100% { opacity: 0.9; transform: translateY(-50%) translateX(60vw) scale(1.3); }
+        }
+        @keyframes wave-fly-left {
+          0% { opacity: 0; transform: translateY(-50%) translateX(0) scale(0.3); }
+          15% { opacity: 1; transform: translateY(-50%) translateX(-30px) scale(0.8); }
+          100% { opacity: 0.9; transform: translateY(-50%) translateX(-60vw) scale(1.3); }
+        }
+        @keyframes banner-burst {
+          0% { transform: translateX(-50%) rotate(-25deg) scale(0); opacity: 0; }
+          25% { transform: translateX(-50%) rotate(8deg) scale(1.4); opacity: 1; }
+          50% { transform: translateX(-50%) rotate(-6deg) scale(1); opacity: 1; }
+          85% { transform: translateX(-50%) rotate(-6deg) scale(1); opacity: 1; }
+          100% { transform: translateX(-50%) rotate(-6deg) scale(0.9); opacity: 0; }
         }
       `}</style>
     </main>
