@@ -176,11 +176,14 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         </div>
       </header>
 
-      {/* 中央格鬥場景：用 aspect-ratio 強制 16:9 顯示完整背景 */}
+      {/* 中央格鬥場景：max-height 限制 45vh，確保下方題目區可見 */}
       <div className="relative w-full overflow-hidden border-b-[3px] border-black bg-[#1e1450] flex justify-center">
         <div
-          className="relative w-full max-w-[min(100vw,160vh)]"
-          style={{ aspectRatio: "1024 / 576" }}
+          className="relative"
+          style={{
+            width: "min(100vw, 80vh)",
+            aspectRatio: "1024 / 576",
+          }}
         >
           <Image src="/sprites/background.png" alt="" fill priority className="object-cover object-center" />
         {/* 你 (P1 紅機甲) */}
