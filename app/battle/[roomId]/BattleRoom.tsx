@@ -149,7 +149,7 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
 
   // ===== BGM (gapless loop via Web Audio API) =====
   const [muted, setMuted] = useState(false);
-  useBGM("/audio/pixel-clash.mp3", view?.phase === "playing", muted, 0.4);
+  useBGM("/audio/pixel-clash.m4a", view?.phase === "playing", muted, 0.4);
 
   async function submit(p: number) {
     if (picked !== null || !view) return;
