@@ -178,36 +178,37 @@ function Room({ raceId, studentId }: { raceId: string; studentId: string }) {
         preload="auto"
         playsInline
       />
-      {/* 頂部 SF2 風 HUD */}
-      <header className="relative bg-gradient-to-b from-blue-700 to-blue-900 border-b-[3px] border-black px-3 py-2 flex items-center gap-2 shadow-[0_4px_0_rgba(0,0,0,0.5)] z-10">
-        <Link
-          href="/race"
-          className="w-7 h-7 flex items-center justify-center bg-amber-500 text-slate-900 font-black text-sm border-2 border-black rounded shadow-[0_2px_0_#000] hover:bg-amber-400"
-        >
-          ✕
-        </Link>
-        <div className="bg-amber-500 text-slate-900 px-3 py-1 font-black text-xs tracking-[0.15em] border-2 border-black rounded">
-          速度賽
-        </div>
-        <button
-          onClick={() => setMuted((m) => !m)}
-          aria-label={muted ? "開啟音樂" : "靜音"}
-          title={muted ? "開啟音樂" : "靜音"}
-          className="w-7 h-7 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm border-2 border-black rounded shadow-[0_2px_0_#000]"
-        >
-          {muted ? "🔇" : "🔊"}
-        </button>
-        <div className="flex-1 text-center text-white font-black text-sm [text-shadow:_2px_2px_0_#000]">
-          題 {Math.min(view.current + 1, view.totalRounds)} / {view.totalRounds}
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-yellow-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">你</span>
-          <ScorePill score={view.yourScore} color="amber" />
-          <span className="text-white/70 text-lg">⚔️</span>
-          <ScorePill score={view.opponentScore} color="emerald" />
-          <span className="text-emerald-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">
-            對手{view.opponentJoined ? "" : "（等）"}
-          </span>
+      {/* 頂部 SF2 風 HUD — 響應式 */}
+      <header className="relative bg-gradient-to-b from-blue-700 to-blue-900 border-b-[3px] border-black px-2 sm:px-3 py-2 shadow-[0_4px_0_rgba(0,0,0,0.5)] z-10">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <Link
+            href="/race"
+            className="w-7 h-7 flex-shrink-0 flex items-center justify-center bg-amber-500 text-slate-900 font-black text-sm border-2 border-black rounded shadow-[0_2px_0_#000] hover:bg-amber-400"
+          >
+            ✕
+          </Link>
+          <div className="bg-amber-500 text-slate-900 px-2 sm:px-3 py-1 font-black text-[10px] sm:text-xs tracking-[0.15em] border-2 border-black rounded flex-shrink-0">
+            速度賽
+          </div>
+          <button
+            onClick={() => setMuted((m) => !m)}
+            aria-label={muted ? "開啟音樂" : "靜音"}
+            className="w-7 h-7 flex-shrink-0 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm border-2 border-black rounded shadow-[0_2px_0_#000]"
+          >
+            {muted ? "🔇" : "🔊"}
+          </button>
+          <div className="flex-1 text-center text-white font-black text-xs sm:text-sm [text-shadow:_2px_2px_0_#000] truncate">
+            題 {Math.min(view.current + 1, view.totalRounds)} / {view.totalRounds}
+          </div>
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <span className="hidden sm:inline text-yellow-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">你</span>
+            <ScorePill score={view.yourScore} color="amber" />
+            <span className="text-white/70 text-sm sm:text-lg">⚔️</span>
+            <ScorePill score={view.opponentScore} color="emerald" />
+            <span className="hidden sm:inline text-emerald-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">
+              對手{view.opponentJoined ? "" : "（等）"}
+            </span>
+          </div>
         </div>
       </header>
 

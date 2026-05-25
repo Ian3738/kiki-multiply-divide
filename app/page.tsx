@@ -2,18 +2,18 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="min-h-svh flex flex-col items-center justify-center px-6 py-12 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+    <main className="min-h-svh flex flex-col items-center justify-center px-4 py-6 sm:px-6 sm:py-12 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
       <div className="max-w-3xl w-full text-center">
-        <h1 className="text-5xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-slate-900">
           乘除小達人
         </h1>
-        <p className="mt-4 text-lg text-slate-600">
+        <p className="mt-3 sm:mt-4 text-sm sm:text-lg text-slate-600">
           國小數學 · 乘除關係 · 155 題
           <br />
           一個人練習，或拉朋友一起 PK。
         </p>
 
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="mt-6 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
           <ModeCard
             href="/solo"
             emoji="🧘"
@@ -96,13 +96,15 @@ function ModeCard({
   return (
     <Link
       href={href}
-      className={`group rounded-xl border-2 ${colors.bg} ${colors.border} p-6 text-left transition flex flex-col`}
+      className={`group rounded-xl border-2 ${colors.bg} ${colors.border} p-4 sm:p-6 text-left transition flex flex-col`}
     >
-      <div className="text-4xl mb-3">{emoji}</div>
-      <h2 className="text-xl font-bold text-slate-900">{title}</h2>
-      <p className="mt-2 text-sm text-slate-600 flex-1">{desc}</p>
+      <div className="flex items-center gap-3 sm:block">
+        <div className="text-3xl sm:text-4xl sm:mb-3">{emoji}</div>
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900">{title}</h2>
+      </div>
+      <p className="mt-2 text-xs sm:text-sm text-slate-600 flex-1">{desc}</p>
       <span
-        className={`mt-4 self-start rounded-full ${colors.btn} px-4 py-1.5 text-white text-sm font-medium`}
+        className={`mt-3 sm:mt-4 self-start rounded-full ${colors.btn} px-4 py-1.5 text-white text-sm font-medium`}
       >
         {cta} →
       </span>

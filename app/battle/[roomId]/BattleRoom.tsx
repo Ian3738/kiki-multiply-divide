@@ -251,53 +251,88 @@ function Room({ roomId, studentId }: { roomId: string; studentId: string }) {
         preload="auto"
         playsInline
       />
-      {/* 頂部 SF2 風 HUD */}
-      <header className="relative bg-gradient-to-b from-blue-700 to-blue-900 border-b-[3px] border-black px-3 py-2 flex items-center gap-2 shadow-[0_4px_0_rgba(0,0,0,0.5)] z-10">
-        <Link
-          href="/battle"
-          className="w-7 h-7 flex items-center justify-center bg-rose-600 text-white font-black text-sm border-2 border-black rounded shadow-[0_2px_0_#000] hover:bg-rose-700"
-        >
-          ✕
-        </Link>
-        <div className="bg-rose-600 text-white px-3 py-1 font-black text-xs tracking-[0.15em] border-2 border-black rounded">
-          賽程表
-        </div>
-        <button
-          onClick={() => setMuted((m) => !m)}
-          aria-label={muted ? "開啟音樂" : "靜音"}
-          title={muted ? "開啟音樂" : "靜音"}
-          className="w-7 h-7 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm border-2 border-black rounded shadow-[0_2px_0_#000]"
-        >
-          {muted ? "🔇" : "🔊"}
-        </button>
-        <div className="flex-1 flex items-center gap-2 justify-end">
-          <span className="text-yellow-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">你 {yourLabel}</span>
-          <div className="text-xs text-white/70 [text-shadow:_1px_1px_0_#000]">✓{view.yourState.correct}</div>
-          <div className="w-32 sm:w-48 h-4 bg-[#4b0d12] border-2 border-black rounded-sm overflow-hidden shadow-inner">
-            <div
-              className="h-full transition-all duration-500"
-              style={{
-                width: `${Math.max(0, view.yourState.hp)}%`,
-                background: "repeating-linear-gradient(90deg, #ff4444 0, #ff4444 6px, #ff8800 6px, #ff8800 12px)",
-                marginLeft: "auto",
-              }}
-            />
+      {/* 頂部 SF2 風 HUD — 響應式 */}
+      <header className="relative bg-gradient-to-b from-blue-700 to-blue-900 border-b-[3px] border-black px-2 sm:px-3 py-2 shadow-[0_4px_0_rgba(0,0,0,0.5)] z-10">
+        {/* Row 1: 控制鈕 (mobile 顯示 + sm 也顯示) */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <Link
+            href="/battle"
+            className="w-7 h-7 flex-shrink-0 flex items-center justify-center bg-rose-600 text-white font-black text-sm border-2 border-black rounded shadow-[0_2px_0_#000] hover:bg-rose-700"
+          >
+            ✕
+          </Link>
+          <div className="bg-rose-600 text-white px-2 sm:px-3 py-1 font-black text-[10px] sm:text-xs tracking-[0.15em] border-2 border-black rounded flex-shrink-0">
+            賽程表
+          </div>
+          <button
+            onClick={() => setMuted((m) => !m)}
+            aria-label={muted ? "開啟音樂" : "靜音"}
+            className="w-7 h-7 flex-shrink-0 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm border-2 border-black rounded shadow-[0_2px_0_#000]"
+          >
+            {muted ? "🔇" : "🔊"}
+          </button>
+          {/* HP 條 mobile 排這條（替代下方原 grid layout）*/}
+          <div className="flex-1 flex items-center gap-1.5 min-w-0 sm:hidden">
+            <span className="text-yellow-300 font-black text-xs whitespace-nowrap [text-shadow:_1px_1px_0_#000]">P1</span>
+            <div className="flex-1 h-3 bg-[#4b0d12] border border-black rounded-sm overflow-hidden min-w-0">
+              <div
+                className="h-full transition-all duration-500 ml-auto"
+                style={{
+                  width: `${Math.max(0, view.yourState.hp)}%`,
+                  background: "repeating-linear-gradient(90deg, #ff4444 0, #ff4444 6px, #ff8800 6px, #ff8800 12px)",
+                  marginLeft: "auto",
+                }}
+              />
+            </div>
+            <span className="text-base px-0.5 animate-pulse">⚔️</span>
+            <div className="flex-1 h-3 bg-[#4b0d12] border border-black rounded-sm overflow-hidden min-w-0">
+              <div
+                className="h-full transition-all duration-500"
+                style={{
+                  width: `${Math.max(0, view.opponentState.hp)}%`,
+                  background: "repeating-linear-gradient(90deg, #ffcc00 0, #ffcc00 6px, #ff8800 6px, #ff8800 12px)",
+                }}
+              />
+            </div>
+            <span className="text-emerald-300 font-black text-xs whitespace-nowrap [text-shadow:_1px_1px_0_#000]">P2</span>
+          </div>
+          {/* sm 以上：你 (label + ✓N + HP) */}
+          <div className="hidden sm:flex flex-1 items-center gap-2 justify-end min-w-0">
+            <span className="text-yellow-300 font-black text-sm tracking-wider whitespace-nowrap [text-shadow:_2px_2px_0_#000]">你 {yourLabel}</span>
+            <div className="text-xs text-white/70 [text-shadow:_1px_1px_0_#000]">✓{view.yourState.correct}</div>
+            <div className="w-32 sm:w-48 h-4 bg-[#4b0d12] border-2 border-black rounded-sm overflow-hidden shadow-inner">
+              <div
+                className="h-full transition-all duration-500"
+                style={{
+                  width: `${Math.max(0, view.yourState.hp)}%`,
+                  background: "repeating-linear-gradient(90deg, #ff4444 0, #ff4444 6px, #ff8800 6px, #ff8800 12px)",
+                  marginLeft: "auto",
+                }}
+              />
+            </div>
+          </div>
+          <div className="hidden sm:block text-2xl px-2 animate-pulse">⚔️</div>
+          <div className="hidden sm:flex flex-1 items-center gap-2 min-w-0">
+            <div className="w-32 sm:w-48 h-4 bg-[#4b0d12] border-2 border-black rounded-sm overflow-hidden shadow-inner">
+              <div
+                className="h-full transition-all duration-500"
+                style={{
+                  width: `${Math.max(0, view.opponentState.hp)}%`,
+                  background: "repeating-linear-gradient(90deg, #ffcc00 0, #ffcc00 6px, #ff8800 6px, #ff8800 12px)",
+                }}
+              />
+            </div>
+            <div className="text-xs text-white/70 [text-shadow:_1px_1px_0_#000]">✓{view.opponentState.correct}</div>
+            <span className="text-emerald-300 font-black text-sm tracking-wider whitespace-nowrap [text-shadow:_2px_2px_0_#000]">
+              {oppLabel}{view.opponentState.joined ? "" : "（等）"}
+            </span>
           </div>
         </div>
-        <div className="text-2xl px-2 animate-pulse">⚔️</div>
-        <div className="flex-1 flex items-center gap-2">
-          <div className="w-32 sm:w-48 h-4 bg-[#4b0d12] border-2 border-black rounded-sm overflow-hidden shadow-inner">
-            <div
-              className="h-full transition-all duration-500"
-              style={{
-                width: `${Math.max(0, view.opponentState.hp)}%`,
-                background: "repeating-linear-gradient(90deg, #ffcc00 0, #ffcc00 6px, #ff8800 6px, #ff8800 12px)",
-              }}
-            />
-          </div>
-          <div className="text-xs text-white/70 [text-shadow:_1px_1px_0_#000]">✓{view.opponentState.correct}</div>
-          <span className="text-emerald-300 font-black text-sm tracking-wider [text-shadow:_2px_2px_0_#000]">
-            {oppLabel}{view.opponentState.joined ? "" : "（等）"}
+        {/* Row 2: mobile 顯示角色名與 ✓ 統計 */}
+        <div className="flex items-center justify-between mt-1 px-1 text-[10px] sm:hidden">
+          <span className="text-yellow-300 font-bold [text-shadow:_1px_1px_0_#000]">你 {yourLabel} · ✓{view.yourState.correct}</span>
+          <span className="text-emerald-300 font-bold [text-shadow:_1px_1px_0_#000]">
+            {oppLabel} · ✓{view.opponentState.correct}{view.opponentState.joined ? "" : "（等）"}
           </span>
         </div>
       </header>
