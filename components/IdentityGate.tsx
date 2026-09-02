@@ -18,7 +18,7 @@ export default function IdentityGate({ children }: Props) {
   }, []);
 
   if (!loaded) {
-    return <div className="py-12 text-center text-slate-400">載入中…</div>;
+    return <div className="py-12 text-center text-slate-500 font-medium">載入中…</div>;
   }
 
   if (!student) {
@@ -34,10 +34,7 @@ export default function IdentityGate({ children }: Props) {
 
   return (
     <>
-      <IdentityBadge
-        student={student}
-        onChange={() => setStudent(null)}
-      />
+      <IdentityBadge student={student} onChange={() => setStudent(null)} />
       {children(studentToId(student), student)}
     </>
   );
@@ -60,25 +57,37 @@ function IdentityForm({ onSubmit }: { onSubmit: (s: Student) => void }) {
   };
 
   return (
-    <div className="mx-auto max-w-md rounded-xl border-2 border-slate-300 bg-white p-6 mt-6">
-      <h2 className="text-lg font-bold text-black">先告訴我你是誰</h2>
-      <p className="mt-1 text-sm text-slate-700">
-        這個資訊會用來統計你的成績、加入排行榜。
-      </p>
-      <form onSubmit={submit} className="mt-4 space-y-4">
+    <div className="mx-auto max-w-md rounded-2xl border-2 border-slate-300/60 bg-white/95 backdrop-blur-sm p-6 sm:p-7 mt-6 shadow-2xl shadow-slate-900/10">
+      <div className="flex items-center gap-3 mb-1">
+        <div className="text-3xl">👋</div>
+        <div>
+          <h2 className="text-lg sm:text-xl font-black text-slate-900">先告訴我你是誰</h2>
+          <p className="text-xs sm:text-sm text-slate-600 font-medium">
+            用來統計你的答題成績
+          </p>
+        </div>
+      </div>
+
+      <form onSubmit={submit} className="mt-5 space-y-4">
         <label className="block">
-          <span className="text-sm font-bold text-black">班級</span>
+          <span className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+            <span className="w-1 h-4 bg-blue-500 rounded" />
+            班級
+          </span>
           <input
             value={classCode}
             onChange={(e) => setClassCode(e.target.value)}
             placeholder="例如 701 或 七年一班"
             maxLength={20}
-            className="mt-1 w-full rounded-lg border-2 border-slate-400 px-3 py-2 text-black placeholder:text-slate-400 focus:border-blue-600 outline-none"
+            className="mt-1.5 w-full rounded-xl border-2 border-slate-300 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition font-medium"
             autoFocus
           />
         </label>
         <label className="block">
-          <span className="text-sm font-bold text-black">座號</span>
+          <span className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+            <span className="w-1 h-4 bg-blue-500 rounded" />
+            座號
+          </span>
           <input
             type="number"
             min={1}
@@ -86,19 +95,19 @@ function IdentityForm({ onSubmit }: { onSubmit: (s: Student) => void }) {
             value={seatNo}
             onChange={(e) => setSeatNo(e.target.value)}
             placeholder="1 ~ 99"
-            className="mt-1 w-full rounded-lg border-2 border-slate-400 px-3 py-2 text-black placeholder:text-slate-400 focus:border-blue-600 outline-none"
+            className="mt-1.5 w-full rounded-xl border-2 border-slate-300 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition font-medium"
           />
         </label>
         {error && (
-          <div className="rounded-lg bg-rose-50 border border-rose-200 p-2 text-sm font-medium text-rose-800">
-            {error}
+          <div className="rounded-xl bg-rose-50 border-2 border-rose-200 p-3 text-sm font-bold text-rose-800 flex items-center gap-2">
+            <span>⚠️</span> {error}
           </div>
         )}
         <button
           type="submit"
-          className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-white font-bold hover:bg-blue-700"
+          className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-4 py-3 text-white font-black shadow-lg shadow-blue-500/40 transition-all active:scale-95 hover:-translate-y-0.5"
         >
-          確認，開始玩
+          ✓ 確認，開始玩
         </button>
       </form>
     </div>
@@ -113,16 +122,19 @@ function IdentityBadge({
   onChange: () => void;
 }) {
   return (
-    <div className="mb-4 flex items-center justify-between rounded-lg bg-white border border-slate-300 px-4 py-2 text-sm">
-      <div>
-        <span className="text-slate-700">目前身分：</span>
-        <span className="font-bold text-black">
-          {student.classCode} · {String(student.seatNo).padStart(2, "0")} 號
-        </span>
+    <div className="mb-4 flex items-center justify-between gap-2 rounded-xl bg-white/90 backdrop-blur-sm border-2 border-slate-200 px-4 py-2 text-sm shadow-sm">
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="text-lg">🎫</span>
+        <div className="min-w-0">
+          <div className="text-[10px] text-slate-500 leading-none font-semibold">目前身分</div>
+          <div className="font-black text-slate-900 truncate">
+            {student.classCode} · {String(student.seatNo).padStart(2, "0")} 號
+          </div>
+        </div>
       </div>
       <button
         onClick={onChange}
-        className="text-xs text-slate-700 hover:text-rose-600 underline font-medium"
+        className="flex-shrink-0 text-xs text-slate-700 hover:text-white hover:bg-rose-600 border border-slate-300 hover:border-rose-600 rounded-full px-3 py-1 font-bold transition"
       >
         換人
       </button>
